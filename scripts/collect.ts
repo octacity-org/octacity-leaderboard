@@ -2,7 +2,7 @@
  * Collects Octacity activity from the GitHub GraphQL API into public/data.json.
  *
  * Token: GH_TOKEN or GITHUB_TOKEN, falling back to `gh auth token` locally.
- * Org teams and private memberships need a token with `read:org`.
+ * Org teams and private memberships need `read:org` (or Members: read for a GitHub App).
  * Only public repositories are collected because the output is published.
  */
 import type { ActivityEvent, LeaderboardData, Person, Repo, Team } from "../src/lib/types";
@@ -126,8 +126,8 @@ async function collectOrg() {
     members: team.members.nodes.map((m: { login: string }) => m.login),
   }));
   // Refuse to publish a leaderboard with nobody on it.
-  if (!members.length) throw new Error("No org members visible; the token needs read:org.");
-  if (!teams.length) console.warn("  ! no teams visible; the token likely lacks read:org");
+  if (!members.length) throw new Error("No org members visible; the token needs read:org (GitHub App: Members: read).");
+  if (!teams.length) console.warn("  ! no teams visible; the token likely lacks read:org (GitHub App: Members: read)");
   return {
     org: { login: org.login, name: org.name ?? org.login, url: org.url, description: org.description || null },
     members,

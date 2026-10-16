@@ -81,6 +81,15 @@ is written by hand. It runs daily at 03:17 UTC, collects fresh data, commits
 
 Repository setup:
 
-1. Add a `LEADERBOARD_TOKEN` secret: a token that can read the org's members and
-   teams (classic `read:org`, or fine-grained with organization *Members: read*).
-2. Set GitHub Pages to deploy from GitHub Actions.
+1. Create a GitHub App owned by the organization (*Organization settings →
+   Developer settings → GitHub Apps → New GitHub App*):
+   - Webhook: turn off *Active*.
+   - Repository permissions, all read-only: *Contents*, *Issues*, *Pull requests*,
+     *Discussions* (*Metadata* is added automatically).
+   - Organization permissions: *Members*: read-only.
+   - Installable only on this account.
+2. Generate a private key on the app's page, then install the app on the
+   organization with access to all repositories.
+3. In this repository, add a `LEADERBOARD_APP_CLIENT_ID` variable (the app's
+   Client ID) and a `LEADERBOARD_APP_PRIVATE_KEY` secret (the whole `.pem` file).
+4. Set GitHub Pages to deploy from GitHub Actions.
