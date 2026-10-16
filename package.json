@@ -1,0 +1,23 @@
+{
+  "name": "octacity-leaderboard",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "collect": "bun run scripts/collect.ts"
+  },
+  "dependencies": {
+    "@solidjs/web": "2.0.0-rc.15",
+    "solid-js": "2.0.0-rc.15"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vite-plugin-solid": "3.0.0-next.27"
+  }
+}
