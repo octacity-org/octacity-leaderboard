@@ -14,12 +14,14 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "members", label: "Members" },
 ];
 
-/** Routes look like `#/activity/2026-10` or `#/standings/all`. */
-function parseHash(): { tab: Tab; period: string | null } {
-  const [, tab, period] = location.hash.split("/");
+/** Routes look like `#/activity/2026-10`, `#/standings/all`, or `#/standings/2026-10?team=aegis`. */
+function parseHash(): { tab: Tab; period: string | null; team: string | null } {
+  const [path = "", query = ""] = location.hash.split("?");
+  const [, tab, period] = path.split("/");
   return {
     tab: TABS.some((t) => t.id === tab) ? (tab as Tab) : "standings",
     period: period && /^(all|\d{4}-\d{2})$/.test(period) ? period : null,
+    team: new URLSearchParams(query).get("team"),
   };
 }
 
@@ -69,8 +71,10 @@ function Main(props: { data: LeaderboardData }) {
   });
   const periodIndex = createMemo(() => periods().indexOf(period()));
 
-  const go = (tab: Tab, next = period()) => {
-    location.hash = `#/${tab}/${next}`;
+  // The team filter belongs to the standings table, so it is kept only there.
+  const go = (tab: Tab, next = period(), team = route().team) => {
+    const query = tab === "standings" && team ? `?team=${encodeURIComponent(team)}` : "";
+    location.hash = `#/${tab}/${next}${query}`;
   };
   const step = (delta: number) => {
     const next = periods()[periodIndex() + delta];
@@ -137,7 +141,14 @@ function Main(props: { data: LeaderboardData }) {
         <main>
           <Switch>
             <Match when={route().tab === "standings"}>
-              <Standings data={props.data} period={period()} months={months()} onPeriod={(p) => go("standings", p)} />
+              <Standings
+                data={props.data}
+                period={period()}
+                months={months()}
+                team={route().team}
+                onPeriod={(p) => go("standings", p)}
+                onTeam={(team) => go("standings", period(), team)}
+              />
             </Match>
             <Match when={route().tab === "activity"}>
               <Logbook data={props.data} period={period()} />

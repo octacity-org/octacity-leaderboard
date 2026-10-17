@@ -36,12 +36,24 @@ function breakdown(counts: Standing["counts"]) {
   return parts.filter(([n]) => n > 0).map(([n, one, many]) => `${fmt(n)} ${n === 1 ? one : many}`);
 }
 
-export function Standings(props: { data: LeaderboardData; period: string; months: string[]; onPeriod: (period: string) => void }) {
+export function Standings(props: {
+  data: LeaderboardData;
+  period: string;
+  months: string[];
+  /** Team slug that narrows the ranking table; null ranks every member. */
+  team: string | null;
+  onPeriod: (period: string) => void;
+  onTeam: (team: string | null) => void;
+}) {
   const events = createMemo(() => inPeriod(props.data.events, props.period));
   const overall = createMemo(() => categoryStandings(events(), props.data.members, "overall"));
+  // Only the ranking table follows the team filter; podium, totals, and boards stay org-wide.
+  const team = createMemo(() => props.data.teams.find((t) => t.slug === props.team) ?? null);
+  const boardMembers = createMemo(() => team()?.members ?? props.data.members);
+  const board = createMemo(() => (team() ? categoryStandings(events(), boardMembers(), "overall") : overall()));
   const inactive = createMemo(() => {
-    const ranked = new Set(overall().map((row) => row.login));
-    return props.data.members.filter((login) => !ranked.has(login));
+    const ranked = new Set(board().map((row) => row.login));
+    return boardMembers().filter((login) => !ranked.has(login));
   });
 
   /** Previous month for the "vs" comparison; none for all-time or the first month. */
@@ -89,9 +101,31 @@ export function Standings(props: { data: LeaderboardData; period: string; months
       <section class="panel board" aria-labelledby="board-title">
         <header class="panel-head">
           <h2 id="board-title">Overall ranking</h2>
-          <p>Every member ranked by weighted score.</p>
+          <p>{team() ? `${team()!.name} members` : "Every member"} ranked by weighted score.</p>
+          <div class="chips board-teams" role="group" aria-label="Team">
+            <button
+              type="button"
+              class={["chip", { on: !team() }]}
+              aria-pressed={!team() ? "true" : "false"}
+              onClick={() => props.onTeam(null)}
+            >
+              All
+            </button>
+            <For each={props.data.teams}>
+              {(t) => (
+                <button
+                  type="button"
+                  class={["chip", { on: team()?.slug === t.slug }]}
+                  aria-pressed={team()?.slug === t.slug ? "true" : "false"}
+                  onClick={() => props.onTeam(t.slug)}
+                >
+                  {t.name}
+                </button>
+              )}
+            </For>
+          </div>
         </header>
-        <Show when={overall().length} fallback={<p class="calm">No member activity {props.period === "all" ? "yet" : `in ${monthName(props.period)}`}.</p>}>
+        <Show when={board().length} fallback={<p class="calm">No {team() ? `${team()!.name} ` : "member "}activity {props.period === "all" ? "yet" : `in ${monthName(props.period)}`}.</p>}>
           <table class="ledger">
             <thead>
               <tr>
@@ -106,7 +140,7 @@ export function Standings(props: { data: LeaderboardData; period: string; months
               </tr>
             </thead>
             <tbody>
-              <For each={overall()}>
+              <For each={board()}>
                 {(row) => (
                   <tr class={{ [`medal-${row.rank}`]: row.rank <= 3 }}>
                     <td class="num rank">{row.rank}</td>
