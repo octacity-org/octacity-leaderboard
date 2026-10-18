@@ -4,9 +4,24 @@ export type BacklogGroupId = "good-first-issue" | "help-wanted" | "general";
 export type IssueStatus = "open" | "claimed" | "review";
 
 export const BACKLOG_GROUPS: { id: BacklogGroupId; label: string; description: string }[] = [
-  { id: "good-first-issue", label: "Good first issue", description: "Small, well-scoped starting points." },
-  { id: "help-wanted", label: "Help wanted", description: "Maintainers are asking for a hand." },
-  { id: "general", label: "General", description: "Everything else that is open." },
+  {
+    id: "good-first-issue",
+    label: "Good first issue",
+    description:
+      "Small, well-scoped tasks that need little knowledge of the codebase. A good place to make your first contribution to an Octacity project.",
+  },
+  {
+    id: "help-wanted",
+    label: "Help wanted",
+    description:
+      "Work the maintainers are actively asking for help with. These can be larger or need more context, so read the issue and ask questions before you start.",
+  },
+  {
+    id: "general",
+    label: "General",
+    description:
+      "Open issues without either label. They may be less defined or already planned by a maintainer, so check with the issue author before you start.",
+  },
 ];
 
 const STATUS_ORDER: Record<IssueStatus, number> = { open: 0, claimed: 1, review: 2 };

@@ -985,34 +985,19 @@ a.member-name:hover {
   padding-top: clamp(32px, 5vw, 56px);
 }
 
-.backlog-group {
-  margin-top: 32px;
-}
-
-.backlog-group h3 {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  font: 400 21px var(--serif);
-}
-
-.backlog-group h3 span {
-  font: 12px var(--mono);
-  color: var(--bone-faint);
-}
-
 .backlog-note {
-  margin: 2px 0 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  max-width: 70ch;
+  margin: 8px 0 14px;
   color: var(--bone-dim);
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .backlog-group ol {
   list-style: none;
   margin: 0;
   padding: 0;
+  border-top: 1px solid var(--line);
 }
 
 .issue {

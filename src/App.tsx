@@ -8,12 +8,12 @@ import { ago, monthLabel } from "./lib/format";
 import { availableMonths } from "./lib/rank";
 import type { LeaderboardData } from "./lib/types";
 
-type Tab = "standings" | "activity" | "members" | "backlog";
+type Tab = "standings" | "activity" | "members" | "contribute";
 const TABS: { id: Tab; label: string }[] = [
   { id: "standings", label: "Standings" },
   { id: "activity", label: "Activity" },
   { id: "members", label: "Members" },
-  { id: "backlog", label: "Backlog" },
+  { id: "contribute", label: "Contribute" },
 ];
 
 /** Routes look like `#/activity/2026-10`, `#/standings/all`, or `#/standings/2026-10?team=aegis`. */
@@ -117,7 +117,7 @@ function Main(props: { data: LeaderboardData }) {
         </header>
 
         {/* The backlog lists what is open now, so it has no period. */}
-        <Show when={route().tab !== "backlog"}>
+        <Show when={route().tab !== "contribute"}>
           <section class="voyage" aria-label="Period">
             <div class="voyage-text">
               <p class="eyebrow">{period() === "all" ? "All-time standings" : "Monthly standings"}</p>
@@ -166,7 +166,7 @@ function Main(props: { data: LeaderboardData }) {
             <Match when={route().tab === "members"}>
               <Crew data={props.data} period={period()} />
             </Match>
-            <Match when={route().tab === "backlog"}>
+            <Match when={route().tab === "contribute"}>
               <Backlog data={props.data} />
             </Match>
           </Switch>
