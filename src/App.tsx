@@ -25,9 +25,14 @@ function parseHash(): { tab: Tab; period: string | null; team: string | null } {
   };
 }
 
+// Production reads the `data` branch, which the Refresh workflow updates hourly.
+const DATA_URL = import.meta.env.DEV
+  ? `${import.meta.env.BASE_URL}data.json`
+  : "https://raw.githubusercontent.com/octacity-org/octacity-leaderboard/data/data.json";
+
 export function App() {
   const data = createMemo(async () => {
-    const response = await fetch(`${import.meta.env.BASE_URL}data.json`);
+    const response = await fetch(DATA_URL);
     if (!response.ok) throw new Error(`Could not load data.json (${response.status})`);
     return (await response.json()) as LeaderboardData;
   });

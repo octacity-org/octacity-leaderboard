@@ -41,6 +41,13 @@ bun run dev
 `GH_TOKEN` or `GITHUB_TOKEN`, and falls back to `gh auth token`. The token needs
 `read:org` to see org members and teams.
 
+`public/data.json` is not committed. To run the site without a token, download
+the published data instead of running `collect`:
+
+```bash
+curl -o public/data.json https://raw.githubusercontent.com/octacity-org/octacity-leaderboard/data/data.json
+```
+
 ## How data is counted
 
 - Only **public, non-fork** repositories are collected, because the output is published.
@@ -76,8 +83,11 @@ uvx --from omniship==0.2.0 omniship generate
 Ship deploys `dist/` to GitHub Pages on every push to `main` and on manual dispatch.
 
 OmniShip does not support scheduled triggers, so `.github/workflows/refresh.yml`
-is written by hand. It runs daily at 03:17 UTC, collects fresh data, commits
-`public/data.json`, and dispatches Ship.
+is written by hand. It runs hourly at minute 17, collects fresh data, and
+force-pushes it as the only commit on the `data` branch. The deployed site
+fetches `data.json` from that branch through raw.githubusercontent.com, so data
+updates do not commit to `main` or redeploy. GitHub caches the file for about
+5 minutes, so new data can take up to ~10 minutes to appear.
 
 Repository setup:
 

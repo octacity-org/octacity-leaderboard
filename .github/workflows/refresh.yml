@@ -1,11 +1,11 @@
 # Hand-written: OmniShip (workflow.py) has no scheduled trigger yet.
-# Collects fresh GitHub activity every day, commits public/data.json, and then
-# dispatches the OmniShip Ship workflow, because pushes made with GITHUB_TOKEN
-# do not trigger other workflows.
+# Collects fresh GitHub activity every hour and force-pushes it as the only
+# commit on the `data` branch. The site fetches data.json from that branch at
+# runtime, so data updates need no commit on main and no redeploy.
 name: Refresh data
 'on':
   schedule:
-  - cron: '17 3 * * *'
+  - cron: '17 * * * *'
   workflow_dispatch: {}
 permissions:
   contents: read
@@ -14,11 +14,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
-    name: Collect and deploy
+    name: Collect and publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
     - name: Set up Bun
@@ -39,21 +38,12 @@ jobs:
       run: bun run collect
       env:
         GH_TOKEN: ${{ steps.app-token.outputs.token }}
-    - name: Commit data
-      id: commit
+    # One parentless commit holding only data.json, so the branch never grows.
+    - name: Publish data branch
       run: |
-        if git diff --quiet -- public/data.json; then
-          echo "changed=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add public/data.json
-        git commit -m "chore(data): refresh leaderboard data"
-        git push
-        echo "changed=true" >> "$GITHUB_OUTPUT"
-    - name: Deploy
-      if: steps.commit.outputs.changed == 'true'
-      run: gh workflow run ship.yml --ref "$GITHUB_REF_NAME"
-      env:
-        GH_TOKEN: ${{ github.token }}
+        blob=$(git hash-object -w public/data.json)
+        tree=$(printf '100644 blob %s\tdata.json\n' "$blob" | git mktree)
+        commit=$(git commit-tree "$tree" -m "Refresh leaderboard data")
+        git push --force origin "${commit}:refs/heads/data"

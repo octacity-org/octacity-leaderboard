@@ -4,6 +4,9 @@ node_modules
 # output
 out
 dist
+
+# leaderboard data (published on the `data` branch)
+public/data.json
 *.tgz
 
 # code coverage

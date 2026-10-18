@@ -1,7 +1,8 @@
 """OmniShip delivery pipeline for the Octacity Leaderboard.
 
 OmniShip has no scheduled trigger, so `.github/workflows/refresh.yml` (hand-written)
-collects fresh data on a cron, commits it, and dispatches the Ship workflow below.
+collects fresh data on a cron and publishes it on the `data` branch, which the site
+reads at runtime. Ship below only deploys code changes.
 """
 
 from omniship import Pipeline
