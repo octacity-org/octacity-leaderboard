@@ -51,6 +51,20 @@ export interface Repo {
   archived: boolean;
 }
 
+export interface BacklogIssue {
+  repo: string;
+  number: number;
+  title: string;
+  url: string;
+  /** ISO-8601 timestamp. */
+  createdAt: string;
+  labels: string[];
+  /** Assignee logins. */
+  assignees: string[];
+  /** Open pull requests linked to close this issue. */
+  pullRequests: { number: number; url: string }[];
+}
+
 export interface LeaderboardData {
   generatedAt: string;
   org: { login: string; name: string; url: string; description: string | null };
@@ -61,4 +75,6 @@ export interface LeaderboardData {
   people: Record<string, Person>;
   repos: Repo[];
   events: ActivityEvent[];
+  /** Open issues in public repositories. */
+  backlog: BacklogIssue[];
 }

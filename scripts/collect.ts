@@ -5,7 +5,7 @@
  * Org teams and private memberships need `read:org` (or Members: read for a GitHub App).
  * Only public repositories are collected because the output is published.
  */
-import type { ActivityEvent, LeaderboardData, Person, Repo, Team } from "../src/lib/types";
+import type { ActivityEvent, BacklogIssue, LeaderboardData, Person, Repo, Team } from "../src/lib/types";
 
 const ORG = process.env.LEADERBOARD_ORG ?? "octacity-org";
 const OUTPUT = new URL("../public/data.json", import.meta.url);
@@ -257,16 +257,20 @@ async function collectPullRequests(repo: string, events: ActivityEvent[]) {
   }
 }
 
-async function collectIssues(repo: string, events: ActivityEvent[]) {
+/** Records issue activity, and open issues of active repositories in the backlog. */
+async function collectIssues(repo: string, events: ActivityEvent[], backlog: BacklogIssue[] | null) {
   const issues = await paginate<any>(
     `query($org: String!, $repo: String!, $cursor: String) {
       repository(owner: $org, name: $repo) {
         issues(first: 100, after: $cursor, orderBy: { field: CREATED_AT, direction: ASC }) {
           pageInfo { hasNextPage endCursor }
           nodes {
-            number title url createdAt
+            number title url createdAt state
             author { ${ACTOR} }
             comments(first: 100) { nodes { url createdAt author { ${ACTOR} } } }
+            labels(first: 20) { nodes { name } }
+            assignees(first: 10) { nodes { ${ACTOR} } }
+            closedByPullRequestsReferences(first: 5) { nodes { number url state } }
           }
         }
       }
@@ -280,6 +284,20 @@ async function collectIssues(repo: string, events: ActivityEvent[]) {
       events.push({ type: "issue_opened", repo, actor: author, at: issue.createdAt, title: issue.title, url: issue.url, number: issue.number });
     }
     pushComments(repo, issue, issue.comments.nodes, events);
+    if (backlog && issue.state === "OPEN") {
+      backlog.push({
+        repo,
+        number: issue.number,
+        title: issue.title,
+        url: issue.url,
+        createdAt: issue.createdAt,
+        labels: issue.labels.nodes.map((label: { name: string }) => label.name),
+        assignees: issue.assignees.nodes.map(person).filter(Boolean),
+        pullRequests: issue.closedByPullRequestsReferences.nodes
+          .filter((pr: { state: string }) => pr.state === "OPEN")
+          .map((pr: { number: number; url: string }) => ({ number: pr.number, url: pr.url })),
+      });
+    }
   }
 }
 
@@ -326,6 +344,7 @@ console.log(`  ${members.length} members, ${teams.length} teams`);
 
 const repoNodes = await collectRepos();
 const events: ActivityEvent[] = [];
+const backlog: BacklogIssue[] = [];
 const repos: Repo[] = [];
 
 for (const [index, repo] of repoNodes.entries()) {
@@ -333,7 +352,8 @@ for (const [index, repo] of repoNodes.entries()) {
   // Sequential on purpose: parallel heavy queries trigger GitHub 502s.
   if (repo.defaultBranchRef) await collectCommits(repo.name, repo.defaultBranchRef.name, events);
   await collectPullRequests(repo.name, events);
-  await collectIssues(repo.name, events);
+  // Archived repositories are read-only, so their open issues cannot be worked on.
+  await collectIssues(repo.name, events, repo.isArchived ? null : backlog);
   if (repo.hasDiscussionsEnabled) await collectDiscussions(repo.name, events);
   // Imported repositories carry upstream history from before they joined the org.
   for (let i = events.length - 1; i >= before; i--) {
@@ -351,7 +371,12 @@ for (const [index, repo] of repoNodes.entries()) {
 
 events.sort((a, b) => b.at.localeCompare(a.at));
 
-const referenced = new Set([...members, ...teams.flatMap((team) => team.members), ...events.map((event) => event.actor)]);
+const referenced = new Set([
+  ...members,
+  ...teams.flatMap((team) => team.members),
+  ...events.map((event) => event.actor),
+  ...backlog.flatMap((issue) => issue.assignees),
+]);
 for (const login of Object.keys(people)) {
   if (!referenced.has(login)) delete people[login];
 }
@@ -364,7 +389,10 @@ const data: LeaderboardData = {
   people,
   repos,
   events,
+  backlog,
 };
 
 await Bun.write(OUTPUT, JSON.stringify(data));
-console.log(`Wrote ${events.length} events for ${Object.keys(people).length} people to public/data.json`);
+console.log(
+  `Wrote ${events.length} events, ${backlog.length} open issues, and ${Object.keys(people).length} people to public/data.json`,
+);

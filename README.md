@@ -10,6 +10,11 @@ Monthly standings, teams, and the full contribution log of the
   for the selected month, filterable by type, repository, and person.
 - **Members**: teams with their leads and members, and a roster of every org member
   with all-time score, 15 per page.
+- **Backlog**: open issues in every public, non-archived repository, grouped into
+  *Good first issue*, *Help wanted* (an issue with both labels is in both), and
+  *General* (neither label). Each issue shows whether it is unclaimed, claimed
+  (assigned), or in review (an open pull request is linked to close it), and opens
+  on GitHub in a new tab.
 
 The organization lead and team leads are not on GitHub, so they are kept by hand
 in `src/roles.json`. Team leads are keyed by team slug:

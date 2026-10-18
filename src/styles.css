@@ -978,6 +978,114 @@ a.member-name:hover {
   padding-left: 0;
 }
 
+/* Backlog ---------------------------------------------------------------- */
+
+/* No period hero above this view, so it supplies its own top spacing. */
+.backlog {
+  padding-top: clamp(32px, 5vw, 56px);
+}
+
+.backlog-group {
+  margin-top: 32px;
+}
+
+.backlog-group h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font: 400 21px var(--serif);
+}
+
+.backlog-group h3 span {
+  font: 12px var(--mono);
+  color: var(--bone-faint);
+}
+
+.backlog-note {
+  margin: 2px 0 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--bone-dim);
+  font-size: 13px;
+}
+
+.backlog-group ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.issue {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) 170px 104px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background-color 150ms ease;
+}
+
+.issue:hover {
+  background: var(--ink-2);
+}
+
+.issue:hover .issue-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.issue-where,
+.issue time {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 12px var(--mono);
+  color: var(--bone-faint);
+}
+
+.issue time {
+  text-align: right;
+}
+
+.issue-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.issue-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.issue-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.issue-label {
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font: 11px/18px var(--mono);
+  color: var(--bone-dim);
+  white-space: nowrap;
+}
+
+.status-open { --tone: var(--t-review); }
+.status-claimed { --tone: var(--gold); }
+.status-review { --tone: var(--t-merged); }
+
+.issue .who {
+  font-size: 12.5px;
+}
+
 /* Crew ------------------------------------------------------------------- */
 
 .crew-view {
@@ -1213,6 +1321,10 @@ a.team-name:hover {
   .entry .where {
     display: none;
   }
+
+  .issue {
+    grid-template-columns: 170px minmax(0, 1fr) 160px 96px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1225,6 +1337,12 @@ a.team-name:hover {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-content: flex-start;
+    gap: 2px;
+  }
+
+  .tabs a {
+    padding: 7px 10px;
+    font-size: 14px;
   }
 
   .podium {
@@ -1294,6 +1412,26 @@ a.team-name:hover {
   .entry .where {
     display: block;
     justify-self: start;
+  }
+
+  .issue {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "where time"
+      "main main"
+      "status status";
+    gap: 6px 12px;
+    padding: 12px 8px;
+  }
+
+  .issue-where { grid-area: where; }
+  .issue .kind { grid-area: status; }
+  .issue time { grid-area: time; }
+
+  .issue-main { grid-area: main; }
+
+  .issue-title {
+    white-space: normal;
   }
 
   .updated {

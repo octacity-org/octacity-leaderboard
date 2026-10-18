@@ -1,4 +1,5 @@
-import { createMemo, createSignal, Errored, For, Loading, Match, onSettled, Switch } from "solid-js";
+import { createMemo, createSignal, Errored, For, Loading, Match, onSettled, Show, Switch } from "solid-js";
+import { Backlog } from "./components/Backlog";
 import { Crew } from "./components/Crew";
 import { Logbook } from "./components/Logbook";
 import { Standings } from "./components/Standings";
@@ -7,11 +8,12 @@ import { ago, monthLabel } from "./lib/format";
 import { availableMonths } from "./lib/rank";
 import type { LeaderboardData } from "./lib/types";
 
-type Tab = "standings" | "activity" | "members";
+type Tab = "standings" | "activity" | "members" | "backlog";
 const TABS: { id: Tab; label: string }[] = [
   { id: "standings", label: "Standings" },
   { id: "activity", label: "Activity" },
   { id: "members", label: "Members" },
+  { id: "backlog", label: "Backlog" },
 ];
 
 /** Routes look like `#/activity/2026-10`, `#/standings/all`, or `#/standings/2026-10?team=aegis`. */
@@ -114,34 +116,37 @@ function Main(props: { data: LeaderboardData }) {
           </p>
         </header>
 
-        <section class="voyage" aria-label="Period">
-          <div class="voyage-text">
-            <p class="eyebrow">{period() === "all" ? "All-time standings" : "Monthly standings"}</p>
-            <h1>{monthLabel(period())}</h1>
-            <div class="helm">
-              <button type="button" onClick={() => step(-1)} disabled={periodIndex() === 0} aria-label="Newer period">
-                ‹
-              </button>
-              <select aria-label="Choose a month" onChange={(event) => go(route().tab, event.currentTarget.value)}>
-                <For each={periods()}>
-                  {(key) => (
-                    <option value={key} selected={key === period()}>
-                      {monthLabel(key)}
-                    </option>
-                  )}
-                </For>
-              </select>
-              <button
-                type="button"
-                onClick={() => step(1)}
-                disabled={periodIndex() === periods().length - 1}
-                aria-label="Older period"
-              >
-                ›
-              </button>
+        {/* The backlog lists what is open now, so it has no period. */}
+        <Show when={route().tab !== "backlog"}>
+          <section class="voyage" aria-label="Period">
+            <div class="voyage-text">
+              <p class="eyebrow">{period() === "all" ? "All-time standings" : "Monthly standings"}</p>
+              <h1>{monthLabel(period())}</h1>
+              <div class="helm">
+                <button type="button" onClick={() => step(-1)} disabled={periodIndex() === 0} aria-label="Newer period">
+                  ‹
+                </button>
+                <select aria-label="Choose a month" onChange={(event) => go(route().tab, event.currentTarget.value)}>
+                  <For each={periods()}>
+                    {(key) => (
+                      <option value={key} selected={key === period()}>
+                        {monthLabel(key)}
+                      </option>
+                    )}
+                  </For>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => step(1)}
+                  disabled={periodIndex() === periods().length - 1}
+                  aria-label="Older period"
+                >
+                  ›
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </Show>
 
         <main>
           <Switch>
@@ -161,13 +166,16 @@ function Main(props: { data: LeaderboardData }) {
             <Match when={route().tab === "members"}>
               <Crew data={props.data} period={period()} />
             </Match>
+            <Match when={route().tab === "backlog"}>
+              <Backlog data={props.data} />
+            </Match>
           </Switch>
         </main>
 
         <footer class="footer">
           <p>
             Built from public activity across <a href={props.data.org.url}>{props.data.repos.length} repositories</a> of{" "}
-            {props.data.org.name}. Refreshed daily by GitHub Actions; months are counted in UTC.
+            {props.data.org.name}. Refreshed hourly by GitHub Actions; months are counted in UTC.
           </p>
           <p class="motto">Let's build together and carry it forward.</p>
         </footer>
