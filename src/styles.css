@@ -767,6 +767,12 @@ a.member-name:hover {
   font-size: 13.5px;
 }
 
+a.roll-winner:hover,
+a.who:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .link {
   padding: 0;
   border: 0;
@@ -1233,6 +1239,325 @@ a.team-name:hover {
   color: var(--bone);
 }
 
+/* Profile ---------------------------------------------------------------- */
+
+/* No period hero above this view, so it supplies its own top spacing. */
+.profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding-top: clamp(24px, 4vw, 40px);
+}
+
+.profile-back {
+  justify-self: start;
+  font: 13.5px var(--sans);
+  color: var(--bone-dim);
+}
+
+.profile-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(20px, 3vw, 36px);
+  padding: 8px 0 12px;
+}
+
+.profile-avatar {
+  border: 2px solid var(--line);
+}
+
+.profile-id h1 {
+  margin: 6px 0 8px;
+  font: 400 clamp(36px, 6vw, 68px) / 1 var(--serif);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.profile-id .member-login {
+  font-size: 13px;
+}
+
+.profile-github {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 13.5px;
+  color: var(--bone-dim);
+}
+
+.profile-github:hover {
+  color: var(--bone);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.profile-scores {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+}
+
+.profile-scores > div {
+  min-width: 150px;
+  padding: 14px 18px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--ink-2);
+}
+
+.profile-scores dt {
+  font: 500 11px var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.profile-scores dd {
+  margin: 0;
+}
+
+.profile-points {
+  margin-top: 4px;
+  color: var(--bone-dim);
+}
+
+.profile-points strong {
+  font: 400 34px/1.1 var(--serif);
+  color: var(--bone);
+}
+
+.profile-rank {
+  font: 12px var(--mono);
+  color: var(--bone-faint);
+}
+
+/* Badges are on hold: src/components/Badges.tsx is not rendered yet. */
+.panel-head h2 .team-tag {
+  vertical-align: middle;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0 22px 22px;
+}
+
+.badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--ink);
+}
+
+.badge.earned {
+  border-color: var(--line);
+}
+
+.medal {
+  --rim: var(--line);
+  flex: none;
+  width: 72px;
+  height: 72px;
+}
+
+.medal.bronze { --rim: var(--bronze); }
+.medal.silver { --rim: var(--silver); }
+.medal.gold { --rim: var(--gold); }
+
+.medal-rim {
+  fill: color-mix(in srgb, var(--rim) 14%, var(--ink-2));
+  stroke: var(--rim);
+  stroke-width: 3;
+}
+
+.medal-face {
+  fill: var(--ink-2);
+  stroke: color-mix(in srgb, var(--rim) 45%, transparent);
+  stroke-width: 1.5;
+}
+
+.medal text {
+  font: 400 40px var(--serif);
+  fill: var(--rim);
+}
+
+.medal.locked .medal-rim {
+  fill: none;
+  stroke-dasharray: 6 5;
+}
+
+.medal.locked text {
+  fill: var(--bone-faint);
+}
+
+.badge-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.badge-name {
+  font: 400 20px/1.2 var(--serif);
+}
+
+.badge:not(.earned) .badge-name {
+  color: var(--bone-dim);
+}
+
+.badge-tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 12px var(--mono);
+  color: var(--bone-faint);
+}
+
+.pips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.pips span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.pips span.on {
+  background: var(--bone-dim);
+}
+
+.badge-desc {
+  font-size: 13px;
+  color: var(--bone-dim);
+}
+
+.badge .bar {
+  margin-top: 6px;
+}
+
+.badge-next {
+  font: 11.5px var(--mono);
+  color: var(--bone-faint);
+}
+
+/* Reversed flow makes an overflowing calendar open scrolled to the current week. */
+.cal-scroll {
+  display: flex;
+  flex-direction: row-reverse;
+  overflow-x: auto;
+  padding: 0 22px 4px;
+  scrollbar-width: thin;
+}
+
+/* Cells stretch to fill the panel and scroll sideways once they reach their minimum size. */
+.cal {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 30px repeat(var(--weeks), minmax(11px, 1fr));
+  grid-template-rows: 16px;
+  gap: 3px;
+  min-width: calc(30px + var(--weeks) * 14px);
+}
+
+.cal-month,
+.cal-weekday {
+  align-self: center;
+  font: 10.5px/13px var(--mono);
+  color: var(--bone-faint);
+  white-space: nowrap;
+}
+
+.cal-month {
+  grid-row: 1;
+}
+
+.cal-weekday {
+  grid-column: 1;
+}
+
+.cal-day {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--line-soft);
+}
+
+.cal-day.level-1 { background: color-mix(in srgb, var(--accent) 30%, var(--ink-3)); }
+.cal-day.level-2 { background: color-mix(in srgb, var(--accent) 52%, var(--ink-3)); }
+.cal-day.level-3 { background: color-mix(in srgb, var(--accent) 76%, var(--ink-3)); }
+.cal-day.level-4 { background: var(--accent); }
+
+.cal-day.future {
+  visibility: hidden;
+}
+
+.cal-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 10px 22px 18px;
+  font: 11px var(--mono);
+  color: var(--bone-faint);
+}
+
+.cal-legend .cal-day {
+  width: 11px;
+  height: 11px;
+}
+
+.profile-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.profile-recent ol {
+  list-style: none;
+  margin: 0;
+  padding: 0 22px 10px;
+}
+
+.profile-recent .entry {
+  grid-template-columns: 136px 96px minmax(0, 1fr) minmax(0, 170px);
+}
+
+.profile-recent .entry time {
+  white-space: nowrap;
+}
+
+.profile-repos .mini li {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.profile-recent .entry:last-child {
+  border-bottom: 0;
+}
+
+.repo-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 13px var(--mono);
+}
+
+.repo-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Footer and splash ------------------------------------------------------ */
 
 .footer {
@@ -1309,6 +1634,22 @@ a.team-name:hover {
 
   .issue {
     grid-template-columns: 170px minmax(0, 1fr) 160px 96px;
+  }
+
+  .profile-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .profile-scores {
+    grid-column: 1 / -1;
+  }
+
+  .profile-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-recent .entry {
+    grid-template-columns: 136px 96px minmax(0, 1fr);
   }
 }
 
@@ -1421,6 +1762,40 @@ a.team-name:hover {
 
   .updated {
     font-size: 11px;
+  }
+
+  .profile-hero {
+    gap: 16px;
+  }
+
+  .profile-avatar {
+    width: 72px;
+    height: 72px;
+    align-self: start;
+  }
+
+  .profile-scores > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* One column: the date sits above the entry instead of beside it. */
+  .profile-recent .entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-recent .entry > * {
+    grid-column: 1;
+  }
+
+  .profile-recent .entry time {
+    grid-row: auto;
+    padding-top: 0;
+  }
+
+  .badge-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 16px 16px;
   }
 }
 

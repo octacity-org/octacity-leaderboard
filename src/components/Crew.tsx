@@ -2,7 +2,7 @@ import { createMemo, createSignal, For, Show } from "solid-js";
 import { dayLabel, fmt } from "../lib/format";
 import { inPeriod, scoreOf } from "../lib/rank";
 import type { ActivityEvent, LeaderboardData } from "../lib/types";
-import { Avatar, leadOf, Member, membersOf, ORG_LEAD, personOf, RoleTags, teamsOf } from "./Member";
+import { Avatar, leadOf, Member, membersOf, ORG_LEAD, personOf, profileHref, RoleTags, teamsOf } from "./Member";
 
 /** Roster cards per carousel page. */
 const ROSTER_PAGE = 15;
@@ -149,7 +149,7 @@ export function Crew(props: { data: LeaderboardData; period: string }) {
               <div class="roster-page">
                 <For each={cards}>
                   {(row) => (
-                    <a class="panel roster-card" href={personOf(props.data, row.login).url} target="_blank" rel="noreferrer">
+                    <a class="panel roster-card" href={profileHref(row.login)}>
                       <Avatar person={personOf(props.data, row.login)} size={48} />
                       <div>
                         <p class="member-name">{personOf(props.data, row.login).name ?? row.login}</p>

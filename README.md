@@ -10,6 +10,10 @@ Monthly standings, teams, and the full contribution log of the
   for the selected month, filterable by type, repository, and person.
 - **Members**: teams with their leads and members, and a roster of every org member
   with all-time score, 15 per page.
+- **Profiles**: select a member's name anywhere to open their profile at
+  `#/member/<login>`: all-time and monthly score and rank, contribution totals,
+  longest weekly streak, a year of activity by UTC day, recent activity, and the
+  repositories they contributed to. Only org members have profiles.
 - **Contribute** ("Up for grabs"): open issues in every public, non-archived repository, shown one
   group at a time: *Good first issue*, *Help wanted* (an issue with both labels is
   in both), or *General* (neither label). Each issue shows whether it is unclaimed, claimed
@@ -74,6 +78,8 @@ curl -o public/data.json https://raw.githubusercontent.com/octacity-org/octacity
 | Issue or PR comment | 1 |
 
 Scoring lives in `src/lib/rank.ts`, with tests in `src/lib/rank.test.ts`.
+Profile stats live in `src/lib/profile.ts`. Badges are drafted in `src/lib/badges.ts`
+and `src/components/Badges.tsx` but not shown yet.
 
 ## Delivery
 

@@ -7,6 +7,9 @@ export function personOf(data: LeaderboardData, login: string): Person {
   return data.people[login] ?? { login, name: null, avatarUrl: `https://github.com/${login}.png`, url: `https://github.com/${login}` };
 }
 
+/** In-app profile route; only org members have one. */
+export const profileHref = (login: string) => `#/member/${encodeURIComponent(login)}`;
+
 export function teamsOf(data: LeaderboardData, login: string) {
   return data.teams.filter((team) => team.members.includes(login));
 }
@@ -56,10 +59,10 @@ export function Avatar(props: { person: Person; size: number; class?: string }) 
   );
 }
 
-/** Avatar, display name, and login linking to the GitHub profile. */
+/** Avatar, display name, and login linking to the member's profile. */
 export function Member(props: { person: Person; size?: number }) {
   return (
-    <a class="member" href={props.person.url} target="_blank" rel="noreferrer">
+    <a class="member" href={profileHref(props.person.login)}>
       <Avatar person={props.person} size={props.size ?? 28} />
       <span class="member-text">
         <span class="member-name">{props.person.name ?? props.person.login}</span>

@@ -2,13 +2,14 @@ import { createMemo, createSignal, Errored, For, Loading, Match, onSettled, Show
 import { Backlog } from "./components/Backlog";
 import { Crew } from "./components/Crew";
 import { Logbook } from "./components/Logbook";
+import { Profile } from "./components/Profile";
 import { Standings } from "./components/Standings";
 import { Wheel } from "./components/Wheel";
 import { ago, monthLabel } from "./lib/format";
 import { availableMonths } from "./lib/rank";
 import type { LeaderboardData } from "./lib/types";
 
-type Tab = "standings" | "activity" | "members" | "contribute";
+type Tab = "standings" | "activity" | "members" | "contribute" | "member";
 const TABS: { id: Tab; label: string }[] = [
   { id: "standings", label: "Standings" },
   { id: "activity", label: "Activity" },
@@ -16,11 +17,16 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "contribute", label: "Contribute" },
 ];
 
-/** Routes look like `#/activity/2026-10`, `#/standings/all`, or `#/standings/2026-10?team=aegis`. */
-function parseHash(): { tab: Tab; period: string | null; team: string | null } {
+/**
+ * Routes look like `#/activity/2026-10`, `#/standings/all`, or `#/standings/2026-10?team=aegis`.
+ * Profiles are `#/member/<login>` and are not a tab.
+ */
+function parseHash(): { tab: Tab; period: string | null; team: string | null; login: string | null } {
   const [path = "", query = ""] = location.hash.split("?");
   const [, tab, period] = path.split("/");
+  if (tab === "member" && period) return { tab: "member", period: null, team: null, login: decodeURIComponent(period) };
   return {
+    login: null,
     tab: TABS.some((t) => t.id === tab) ? (tab as Tab) : "standings",
     period: period && /^(all|\d{4}-\d{2})$/.test(period) ? period : null,
     team: new URLSearchParams(query).get("team"),
@@ -65,7 +71,12 @@ export function App() {
 function Main(props: { data: LeaderboardData }) {
   const [route, setRoute] = createSignal(parseHash());
   onSettled(() => {
-    const sync = () => setRoute(parseHash());
+    const sync = () => {
+      const next = parseHash();
+      // Profile links carry no element id, so the browser would keep the old scroll position.
+      if (next.login && next.login !== route().login) window.scrollTo(0, 0);
+      setRoute(next);
+    };
     window.addEventListener("hashchange", sync);
     return () => window.removeEventListener("hashchange", sync);
   });
@@ -104,7 +115,7 @@ function Main(props: { data: LeaderboardData }) {
             {TABS.map((tab) => (
               <a
                 href={`#/${tab.id}/${period()}`}
-                class={{ active: route().tab === tab.id }}
+                class={{ active: route().tab === tab.id || (tab.id === "members" && route().tab === "member") }}
                 aria-current={route().tab === tab.id ? "page" : undefined}
               >
                 {tab.label}
@@ -116,8 +127,8 @@ function Main(props: { data: LeaderboardData }) {
           </p>
         </header>
 
-        {/* The backlog lists what is open now, so it has no period. */}
-        <Show when={route().tab !== "contribute"}>
+        {/* The backlog lists what is open now and profiles cover all time, so neither has a period. */}
+        <Show when={route().tab !== "contribute" && route().tab !== "member"}>
           <section class="voyage" aria-label="Period">
             <div class="voyage-text">
               <p class="eyebrow">{period() === "all" ? "All-time standings" : "Monthly standings"}</p>
@@ -168,6 +179,9 @@ function Main(props: { data: LeaderboardData }) {
             </Match>
             <Match when={route().tab === "contribute"}>
               <Backlog data={props.data} />
+            </Match>
+            <Match when={route().tab === "member" && route().login}>
+              {(login) => <Profile data={props.data} login={login()} month={months()[0]!} />}
             </Match>
           </Switch>
         </main>

@@ -55,7 +55,7 @@ export function availableMonths(events: ActivityEvent[], now = new Date()): stri
 }
 
 /** Repeat reviews of the same pull request by the same reviewer count once. */
-function countable(events: ActivityEvent[]): ActivityEvent[] {
+export function countable(events: ActivityEvent[]): ActivityEvent[] {
   const seen = new Set<string>();
   return events.filter((event) => {
     if (event.type !== "review") return true;

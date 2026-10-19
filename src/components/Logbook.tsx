@@ -2,7 +2,7 @@ import { createMemo, createSignal, For, Show } from "solid-js";
 import { dayLabel, EVENT_META, fmt, monthLabel, timeLabel } from "../lib/format";
 import { inPeriod } from "../lib/rank";
 import type { ActivityEvent, EventType, LeaderboardData } from "../lib/types";
-import { Avatar, personOf } from "./Member";
+import { Avatar, personOf, profileHref } from "./Member";
 
 const FILTERS: { id: string; label: string; types: EventType[] }[] = [
   { id: "commits", label: "Commits", types: ["commit"] },
@@ -137,13 +137,22 @@ export function Logbook(props: { data: LeaderboardData; period: string }) {
                           · {entry.state!.toLowerCase().replace("_", " ")}
                         </Show>
                       </span>
-                      <span class="who">
-                        <Avatar person={personOf(props.data, entry.actor)} size={20} />
-                        {entry.actor}
-                        <Show when={!members().has(entry.actor)}>
-                          <span class="guest">guest</span>
-                        </Show>
-                      </span>
+                      {/* Guests have no profile. */}
+                      <Show
+                        when={members().has(entry.actor)}
+                        fallback={
+                          <span class="who">
+                            <Avatar person={personOf(props.data, entry.actor)} size={20} />
+                            {entry.actor}
+                            <span class="guest">guest</span>
+                          </span>
+                        }
+                      >
+                        <a class="who" href={profileHref(entry.actor)}>
+                          <Avatar person={personOf(props.data, entry.actor)} size={20} />
+                          {entry.actor}
+                        </a>
+                      </Show>
                       <a class="what" href={entry.url} target="_blank" rel="noreferrer">
                         {entry.title}
                       </a>

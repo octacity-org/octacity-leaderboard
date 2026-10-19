@@ -10,7 +10,7 @@ import {
   type Standing,
 } from "../lib/rank";
 import type { EventType, LeaderboardData } from "../lib/types";
-import { Avatar, leadOf, Member, personOf, RoleTags } from "./Member";
+import { Avatar, leadOf, Member, personOf, profileHref, RoleTags } from "./Member";
 
 const PODIUM_TITLES = ["1st place", "2nd place", "3rd place"];
 
@@ -165,7 +165,7 @@ export function Standings(props: {
             <div class="ashore-list">
               <For each={inactive()}>
                 {(login) => (
-                  <a href={personOf(props.data, login).url} target="_blank" rel="noreferrer" title={`@${login}`}>
+                  <a href={profileHref(login)} title={`@${login}`}>
                     <Avatar person={personOf(props.data, login)} size={26} />
                   </a>
                 )}
@@ -214,7 +214,7 @@ function Podium(props: { data: LeaderboardData; rows: Standing[] }) {
                 <Avatar person={personOf(props.data, row().login)} size={place === 0 ? 112 : 64} class="berth-avatar" />
                 <div class="berth-body">
                   <p class="berth-title">{PODIUM_TITLES[place]}{row().rank !== place + 1 ? " (tied)" : ""}</p>
-                  <a class="berth-name" href={personOf(props.data, row().login).url} target="_blank" rel="noreferrer">
+                  <a class="berth-name" href={profileHref(row().login)}>
                     {personOf(props.data, row().login).name ?? row().login}
                   </a>
                   <p class="berth-login">
@@ -383,13 +383,13 @@ function Roll(props: { data: LeaderboardData; months: string[]; current: string;
                       <td>
                         <Show when={winners[0]} fallback={<span class="dim">—</span>}>
                           {(winner) => (
-                            <span class="roll-winner" title={`${fmt(winner().value)}`}>
+                            <a class="roll-winner" href={profileHref(winner().login)} title={`${fmt(winner().value)}`}>
                               <Avatar person={personOf(props.data, winner().login)} size={20} />
                               {winner().login}
                               <Show when={winners.length > 1}>
                                 <span class="dim"> +{winners.length - 1}</span>
                               </Show>
-                            </span>
+                            </a>
                           )}
                         </Show>
                       </td>
