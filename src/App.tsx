@@ -33,7 +33,7 @@ function parseHash(): { tab: Tab; period: string | null; team: string | null; lo
   };
 }
 
-// Production reads the `data` branch, which the Refresh workflow updates hourly.
+// Production reads the `data` branch, which the Refresh workflow updates daily.
 const DATA_URL = import.meta.env.DEV
   ? `${import.meta.env.BASE_URL}data.json`
   : "https://raw.githubusercontent.com/octacity-org/octacity-leaderboard/data/data.json";
@@ -189,7 +189,7 @@ function Main(props: { data: LeaderboardData }) {
         <footer class="footer">
           <p>
             Built from public activity across <a href={props.data.org.url}>{props.data.repos.length} repositories</a> of{" "}
-            {props.data.org.name}. Refreshed hourly by GitHub Actions; months are counted in UTC.
+            {props.data.org.name}. Refreshed daily by GitHub Actions; months are counted in UTC.
           </p>
           <p class="motto">Let's build together and carry it forward.</p>
         </footer>

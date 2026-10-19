@@ -94,7 +94,7 @@ uvx --from omniship==0.2.0 omniship generate
 Ship deploys `dist/` to GitHub Pages on every push to `main` and on manual dispatch.
 
 OmniShip does not support scheduled triggers, so `.github/workflows/refresh.yml`
-is written by hand. It runs hourly at minute 17, collects fresh data, and
+is written by hand. It runs daily at 03:17 UTC, collects fresh data, and
 force-pushes it as the only commit on the `data` branch. The deployed site
 fetches `data.json` from that branch through raw.githubusercontent.com, so data
 updates do not commit to `main` or redeploy. GitHub caches the file for about

@@ -1,11 +1,11 @@
 # Hand-written: OmniShip (workflow.py) has no scheduled trigger yet.
-# Collects fresh GitHub activity every hour and force-pushes it as the only
+# Collects fresh GitHub activity daily at 03:17 UTC and force-pushes it as the only
 # commit on the `data` branch. The site fetches data.json from that branch at
 # runtime, so data updates need no commit on main and no redeploy.
 name: Refresh data
 'on':
   schedule:
-  - cron: '17 * * * *'
+  - cron: '17 3 * * *'
   workflow_dispatch: {}
 permissions:
   contents: read
