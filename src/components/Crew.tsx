@@ -1,4 +1,5 @@
 import { createMemo, createSignal, For, Show } from "solid-js";
+import { bonusesFor } from "../lib/bonus";
 import { dayLabel, fmt } from "../lib/format";
 import { inPeriod, scoreOf } from "../lib/rank";
 import type { ActivityEvent, LeaderboardData } from "../lib/types";
@@ -22,13 +23,15 @@ export function Crew(props: { data: LeaderboardData; period: string }) {
       if (list) list.push(event);
       else byActor.set(event.actor, [event]);
     }
+    const bonuses = bonusesFor(props.data);
     return props.data.members
       .map((login): CrewRow => {
         const own = byActor.get(login) ?? [];
+        const ownBonuses = bonuses.filter((bonus) => bonus.actor === login);
         return {
           login,
-          score: scoreOf(inPeriod(own, props.period)),
-          allTime: scoreOf(own),
+          score: scoreOf(inPeriod(own, props.period), inPeriod(ownBonuses, props.period)),
+          allTime: scoreOf(own, ownBonuses),
           // Events are stored newest first.
           last: own[0]?.at ?? null,
         };

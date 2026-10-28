@@ -271,6 +271,7 @@ async function collectIssues(repo: string, events: ActivityEvent[], backlog: Bac
             labels(first: 20) { nodes { name } }
             assignees(first: 10) { nodes { ${ACTOR} } }
             closedByPullRequestsReferences(first: 5) { nodes { number url state } }
+            mergedFixes: closedByPullRequestsReferences(first: 10, includeClosedPrs: true) { nodes { number state } }
           }
         }
       }
@@ -281,7 +282,19 @@ async function collectIssues(repo: string, events: ActivityEvent[], backlog: Bac
   for (const issue of issues) {
     const author = person(issue.author);
     if (author) {
-      events.push({ type: "issue_opened", repo, actor: author, at: issue.createdAt, title: issue.title, url: issue.url, number: issue.number });
+      const closedBy = issue.mergedFixes.nodes
+        .filter((pr: { state: string }) => pr.state === "MERGED")
+        .map((pr: { number: number }) => pr.number);
+      events.push({
+        type: "issue_opened",
+        repo,
+        actor: author,
+        at: issue.createdAt,
+        title: issue.title,
+        url: issue.url,
+        number: issue.number,
+        ...(closedBy.length ? { closedBy } : {}),
+      });
     }
     pushComments(repo, issue, issue.comments.nodes, events);
     if (backlog && issue.state === "OPEN") {

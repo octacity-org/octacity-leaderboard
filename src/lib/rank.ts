@@ -1,3 +1,4 @@
+import { BONUS_POINTS, type Bonus } from "./bonus";
 import type { ActivityEvent, EventType, Team } from "./types";
 
 /** "all" or a UTC month key such as "2026-10". */
@@ -37,7 +38,7 @@ export const CATEGORIES: Category[] = [
 
 export const monthOf = (iso: string) => iso.slice(0, 7);
 
-export function inPeriod(events: ActivityEvent[], period: Period): ActivityEvent[] {
+export function inPeriod<T extends { at: string }>(events: T[], period: Period): T[] {
   return period === "all" ? events : events.filter((event) => monthOf(event.at) === period);
 }
 
@@ -66,8 +67,10 @@ export function countable(events: ActivityEvent[]): ActivityEvent[] {
   });
 }
 
-export function scoreOf(events: ActivityEvent[]): number {
-  return countable(events).reduce((sum, event) => sum + WEIGHTS[event.type], 0);
+/** Weighted score of events plus any bonuses earned with them. */
+export function scoreOf(events: ActivityEvent[], bonuses: Bonus[] = []): number {
+  const points = countable(events).reduce((sum, event) => sum + WEIGHTS[event.type], 0);
+  return bonuses.reduce((sum, bonus) => sum + BONUS_POINTS[bonus.type], points);
 }
 
 export function countByType(events: ActivityEvent[]): Record<EventType, number> {
@@ -76,8 +79,8 @@ export function countByType(events: ActivityEvent[]): Record<EventType, number> 
   return counts;
 }
 
-function valueFor(category: CategoryId, events: ActivityEvent[]): number {
-  if (category === "overall") return scoreOf(events);
+function valueFor(category: CategoryId, events: ActivityEvent[], bonuses: Bonus[]): number {
+  if (category === "overall") return scoreOf(events, bonuses);
   if (category === "lines") {
     return events.reduce((sum, e) => (e.type === "pr_merged" ? sum + (e.additions ?? 0) + (e.deletions ?? 0) : sum), 0);
   }
@@ -85,8 +88,8 @@ function valueFor(category: CategoryId, events: ActivityEvent[]): number {
   return countable(events).filter((event) => types.includes(event.type)).length;
 }
 
-function groupByActor(events: ActivityEvent[]): Map<string, ActivityEvent[]> {
-  const groups = new Map<string, ActivityEvent[]>();
+function groupByActor<T extends { actor: string }>(events: T[]): Map<string, T[]> {
+  const groups = new Map<string, T[]>();
   for (const event of events) {
     const list = groups.get(event.actor);
     if (list) list.push(event);
@@ -111,13 +114,14 @@ export interface Standing {
   counts: Record<EventType, number>;
 }
 
-/** Member standings for one category over already period-filtered events. */
-export function categoryStandings(events: ActivityEvent[], members: string[], category: CategoryId): Standing[] {
+/** Member standings for one category over already period-filtered events and bonuses. */
+export function categoryStandings(events: ActivityEvent[], members: string[], category: CategoryId, bonuses: Bonus[] = []): Standing[] {
   const groups = groupByActor(events);
+  const bonusGroups = groupByActor(bonuses);
   const rows = members
     .map((login) => {
       const own = groups.get(login) ?? [];
-      return { login, value: valueFor(category, own), counts: countByType(own) };
+      return { login, value: valueFor(category, own, bonusGroups.get(login) ?? []), counts: countByType(own) };
     })
     .filter((row) => row.value > 0)
     .sort((a, b) => b.value - a.value || a.login.localeCompare(b.login));
@@ -136,12 +140,13 @@ export interface TeamStanding {
   counts: Record<EventType, number>;
 }
 
-export function teamStandings(events: ActivityEvent[], teams: Team[]): TeamStanding[] {
+export function teamStandings(events: ActivityEvent[], teams: Team[], bonuses: Bonus[] = []): TeamStanding[] {
   const groups = groupByActor(events);
+  const bonusGroups = groupByActor(bonuses);
   const rows = teams
     .map((team) => {
       const scores = team.members
-        .map((login) => ({ login, score: scoreOf(groups.get(login) ?? []) }))
+        .map((login) => ({ login, score: scoreOf(groups.get(login) ?? [], bonusGroups.get(login) ?? []) }))
         .sort((a, b) => b.score - a.score || a.login.localeCompare(b.login));
       const active = scores.filter((s) => s.score > 0);
       return {

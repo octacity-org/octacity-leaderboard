@@ -26,6 +26,8 @@ export interface ActivityEvent {
   state?: string;
   /** Discussion category. */
   category?: string;
+  /** Merged pull requests that closed this issue. */
+  closedBy?: number[];
 }
 
 export interface Person {

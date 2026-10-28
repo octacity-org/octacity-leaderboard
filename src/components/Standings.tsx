@@ -1,4 +1,5 @@
 import { createMemo, For, Show } from "solid-js";
+import { BONUS_POINTS, type Bonus, bonusesFor } from "../lib/bonus";
 import { fmt, monthLabel, monthName } from "../lib/format";
 import {
   CATEGORIES,
@@ -46,11 +47,12 @@ export function Standings(props: {
   onTeam: (team: string | null) => void;
 }) {
   const events = createMemo(() => inPeriod(props.data.events, props.period));
-  const overall = createMemo(() => categoryStandings(events(), props.data.members, "overall"));
+  const bonuses = createMemo(() => inPeriod(bonusesFor(props.data), props.period));
+  const overall = createMemo(() => categoryStandings(events(), props.data.members, "overall", bonuses()));
   // Only the ranking table follows the team filter; podium, totals, and boards stay org-wide.
   const team = createMemo(() => props.data.teams.find((t) => t.slug === props.team) ?? null);
   const boardMembers = createMemo(() => team()?.members ?? props.data.members);
-  const board = createMemo(() => (team() ? categoryStandings(events(), boardMembers(), "overall") : overall()));
+  const board = createMemo(() => (team() ? categoryStandings(events(), boardMembers(), "overall", bonuses()) : overall()));
   const inactive = createMemo(() => {
     const ranked = new Set(board().map((row) => row.login));
     return boardMembers().filter((login) => !ranked.has(login));
@@ -175,7 +177,7 @@ export function Standings(props: {
         </Show>
       </section>
 
-      <Teams data={props.data} events={events()} />
+      <Teams data={props.data} events={events()} bonuses={bonuses()} />
 
       <section class="categories" aria-label="Category boards">
         <For each={CATEGORIES.filter((c) => c.id !== "overall")}>
@@ -187,7 +189,10 @@ export function Standings(props: {
 
       <p class="weights">
         Score: commit 2 · PR opened 3 · PR merged 6 · review 5 (once per PR) · issue 3 · discussion 4 · reply 2 · comment 1.
-        Only organization members are ranked.
+        Bonuses: +{BONUS_POINTS.review_24h} for reviewing a PR within 24 hours of it opening, +{BONUS_POINTS.review_48h} within 48 hours ·
+        +{BONUS_POINTS.reviewed_merge} for a PR merged after someone else approved it · +{BONUS_POINTS.first_merge} for your first merged
+        PR in a repository · +{BONUS_POINTS.first_issue} the first time another member responds to or closes one of your issues in a repository ·
+        +{BONUS_POINTS.helping_hand} for a comment on someone else's issue or PR. Only organization members are ranked.
       </p>
     </div>
   );
@@ -235,8 +240,8 @@ function Podium(props: { data: LeaderboardData; rows: Standing[] }) {
   );
 }
 
-function Teams(props: { data: LeaderboardData; events: LeaderboardData["events"] }) {
-  const rows = createMemo(() => teamStandings(props.events, props.data.teams));
+function Teams(props: { data: LeaderboardData; events: LeaderboardData["events"]; bonuses: Bonus[] }) {
+  const rows = createMemo(() => teamStandings(props.events, props.data.teams, props.bonuses));
   return (
     <section class="panel teams" aria-labelledby="teams-title">
       <header class="panel-head">
@@ -349,9 +354,12 @@ function Roll(props: { data: LeaderboardData; months: string[]; current: string;
   const rows = createMemo(() =>
     props.months.map((month) => {
       const events = inPeriod(props.data.events, month);
+      const bonuses = inPeriod(bonusesFor(props.data), month);
       return {
         month,
-        winners: CATEGORIES.map((category) => categoryStandings(events, props.data.members, category.id).filter((row) => row.rank === 1)),
+        winners: CATEGORIES.map((category) =>
+          categoryStandings(events, props.data.members, category.id, bonuses).filter((row) => row.rank === 1),
+        ),
       };
     }),
   );

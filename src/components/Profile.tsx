@@ -1,4 +1,5 @@
 import { createMemo, For, Show } from "solid-js";
+import { bonusesFor } from "../lib/bonus";
 import { dayLabel, EVENT_META, fmt, monthName } from "../lib/format";
 import { calendarWeeks, dailyCounts, streakMilestones } from "../lib/profile";
 import { categoryStandings, countByType, inPeriod, type Standing } from "../lib/rank";
@@ -37,9 +38,14 @@ function ProfileBody(props: { data: LeaderboardData; login: string; month: strin
   // Events are stored newest first.
   const own = createMemo(() => props.data.events.filter((event) => event.actor === props.login));
   const counts = createMemo(() => countByType(own()));
-  const allTime = createMemo(() => categoryStandings(props.data.events, props.data.members, "overall"));
+  const allTime = createMemo(() => categoryStandings(props.data.events, props.data.members, "overall", bonusesFor(props.data)));
   const thisMonth = createMemo(() =>
-    categoryStandings(inPeriod(props.data.events, props.month), props.data.members, "overall"),
+    categoryStandings(
+      inPeriod(props.data.events, props.month),
+      props.data.members,
+      "overall",
+      inPeriod(bonusesFor(props.data), props.month),
+    ),
   );
   const days = createMemo(() => dailyCounts(own()));
   const repos = createMemo(() => {

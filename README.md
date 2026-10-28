@@ -77,7 +77,18 @@ curl -o public/data.json https://raw.githubusercontent.com/octacity-org/octacity
 | Discussion reply | 2 |
 | Issue or PR comment | 1 |
 
-Scoring lives in `src/lib/rank.ts`, with tests in `src/lib/rank.test.ts`.
+Bonuses are added to the overall and team scores, in the month they are earned:
+
+| Bonus | Points |
+| --- | --- |
+| Review within 24 hours of the pull request opening (first review per PR per reviewer) | +3 |
+| Review within 48 hours of the pull request opening | +2 |
+| Pull request merged after someone else approved it | +3 |
+| First merged pull request in a repository | +5 |
+| First time another member comments on, or merges a fix for, one of your issues in a repository | +2 |
+| Comment on someone else's issue or pull request | +1 |
+
+Scoring lives in `src/lib/rank.ts` and bonuses in `src/lib/bonus.ts`, with tests next to them.
 Profile stats live in `src/lib/profile.ts`. Badges are drafted in `src/lib/badges.ts`
 and `src/components/Badges.tsx` but not shown yet.
 
