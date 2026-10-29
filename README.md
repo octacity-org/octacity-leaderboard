@@ -60,6 +60,7 @@ curl -o public/data.json https://raw.githubusercontent.com/octacity-org/octacity
 ## How data is counted
 
 - Only **public, non-fork** repositories are collected, because the output is published.
+- `membership` is not collected: it holds membership applications, not contributions.
 - Events dated before a repository joined the org are dropped, so imported
   repositories do not bring their upstream history.
 - Commits are read from each default branch; merge commits are skipped.

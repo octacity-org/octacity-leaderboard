@@ -8,6 +8,8 @@
 import type { ActivityEvent, BacklogIssue, LeaderboardData, Person, Repo, Team } from "../src/lib/types";
 
 const ORG = process.env.LEADERBOARD_ORG ?? "octacity-org";
+/** Repositories that are not contribution work, such as membership applications. */
+const EXCLUDED_REPOS = new Set(["membership"]);
 const OUTPUT = new URL("../public/data.json", import.meta.url);
 
 const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || ghCliToken();
@@ -151,7 +153,7 @@ async function collectRepos() {
     { org: ORG },
     (data) => data.organization.repositories,
   );
-  return nodes.filter((repo) => !repo.isFork);
+  return nodes.filter((repo) => !repo.isFork && !EXCLUDED_REPOS.has(repo.name));
 }
 
 // Repository activity ----------------------------------------------------------
